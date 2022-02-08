@@ -38,7 +38,3 @@ italian_names <- italian_names %>%
 gender_merged <- gender %>% 
   left_join(italian_names, by = "name")
 
-
-
-Encoding(a[[1]]) <- "UTF-8"
-Encoding(italian_names[[7]]) <- "UTF-8"
