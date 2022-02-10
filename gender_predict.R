@@ -38,3 +38,5 @@ italian_names <- italian_names %>%
 gender_merged <- gender %>% 
   left_join(italian_names, by = "name")
 
+
+
