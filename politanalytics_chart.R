@@ -1,16 +1,17 @@
 library(readxl)
 library(tidyverse)
 
-responses <- read_excel("responses-2.xlsx")
+responses <- read_excel("Politanalytics survey.xlsx")
 
-to_keep <- responses[,c(1:6)]
-to_remove <- responses[,c(1, 7:11)]
-order <- responses[,c(1, 12)]
+to_keep <- responses[,c(1,5)]
+to_remove <- responses[,c(2,5)]
+order <- responses[,c(3,5)]
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
 
 keep <- to_keep %>% 
-  pivot_longer(cols = c(2:6), values_to = "option") %>% 
+  separate(keep, into = as.character(c(1,2,3,4,5)), sep = ", ") %>% 
+  pivot_longer(cols = c(1:5), values_to = "option") %>% 
   select(-name) %>% 
   na.omit() %>% 
   mutate(respondents = length(unique(`#`))) %>% 
@@ -22,7 +23,8 @@ keep <- to_keep %>%
   distinct()
 
 remove <- to_remove %>% 
-  pivot_longer(cols = c(2:6), values_to = "option") %>% 
+  separate(remove, into = as.character(c(1,2,3,4,5)), sep = ", ") %>% 
+  pivot_longer(cols = c(1:5), values_to = "option") %>% 
   select(-name) %>% 
   na.omit() %>% 
   mutate(respondents = length(unique(`#`))) %>% 
@@ -65,8 +67,8 @@ library(cowplot)
 library(wesanderson)
 
 ordering <- order %>% 
-  separate(col = order, into = c("1", "2", "3", "4", "5"), sep = ",") %>% 
-  pivot_longer(cols = c(2:6), names_to = "rank") %>% 
+  separate(col = order, into = c("1", "2", "3", "4", "5"), sep = ", ") %>% 
+  pivot_longer(cols = c(1:5), names_to = "rank") %>% 
   rename(respondents = `#`)
 
 ggplot(ordering, aes(respondents, as.numeric(rank), color = value)) +
@@ -88,5 +90,6 @@ ordering_scores <- ordering %>%
   mutate(mean_rank = round(mean(as.numeric(rank)), 2)) %>% 
   select(-c(respondents, rank)) %>% 
   distinct() %>% 
-  arrange(mean_rank)
+  arrange(mean_rank) %>% 
+  mutate(reversed_score = 5-mean_rank)
 
