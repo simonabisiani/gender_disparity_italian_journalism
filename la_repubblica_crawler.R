@@ -8,13 +8,23 @@ library(rlist)
 
 start_date <- as.Date("2021/01/01")
 dates <- as.character(gsub("-", "/", seq(start_date, by = "day", length.out = 2)))
+pg <- 1
+
+# build_url <- function(date, pg){
+#   url <- paste0(
+#     "https://ricerca.repubblica.it/repubblica/archivio/repubblica/",
+#     date,
+#     "?page=",
+#     pg
+#   )
+#   return(url)
+# }
+# 
+# initial_url <- build_url(start_date, pg)
 
 
-remDr <- rsDriver(browser = 'firefox', port = 4460L)
+remDr <- rsDriver(browser = 'firefox', port = 4466L)
 rm <- remDr$client
-
-# navigate link
-#rm$navigate("https://ricerca.repubblica.it/repubblica/archivio/repubblica/2022/02/01")
 
 # list storing articles
 article_list <- c()
@@ -25,52 +35,42 @@ sezione_list <- c()
 
 # start for loop
 for (date in dates) {
-  page <- 1
+  pg <- 1
   condition <- TRUE
+  
 
-  #print(date)
-
-  while (TRUE) {
+  
+   while (condition == TRUE) {
     article_list_tmp <-
       paste0(
         "https://ricerca.repubblica.it/repubblica/archivio/repubblica/",
         date,
         "?page=",
-        page
-      )
+        pg
+        )
     rm$navigate(article_list_tmp)
     page <- unlist(rm$getPageSource())
     tpage <- htmlParse(page)
     article <- xpathSApply(tpage, "//article", xmlValue)
-    # print("article")
-    # print(length(article))
-    if (length(article) > 0) {
-    time <- xpathSApply(tpage, "//time", xmlValue)
-    headlines <- xpathSApply(tpage, "//h1/a", xmlValue)
-    author <-
-      xpathSApply(tpage, "//em[@class = 'author']", xmlValue)
-    sezione <-
-      xpathSApply(tpage, "//span[@class = 'section']", xmlValue)
-    article_list <- append(article_list, article)
-    time_list <- append(time_list, time)
-    headlines_list <- append(headlines_list, headlines)
-    authors_list <- append(authors_list, author)
-    sezione_list <- append(sezione_list, sezione)
-    #i = i + 1
-    # print(article_list_tmp)
-    # 
-    # 
-    # print("pagina attuale")
-    # print(page)
-    page <- page + 1
-    # print("pagina +1",page)
-    # print(page)
     
+    if (length(article) > 0) {
+      time <- xpathSApply(tpage, "//time", xmlValue)
+      headlines <- xpathSApply(tpage, "//h1/a", xmlValue)
+      author <-
+        xpathSApply(tpage, "//em[@class = 'author']", xmlValue)
+      sezione <-
+        xpathSApply(tpage, "//span[@class = 'section']", xmlValue)
+      article_list <- append(article_list, article)
+      time_list <- append(time_list, time)
+      headlines_list <- append(headlines_list, headlines)
+      authors_list <- append(authors_list, author)
+      sezione_list <- append(sezione_list, sezione)
+      pg <- pg + 1
     }
     else {
       condition <- FALSE
     }
-  }
+ }
 }
 
 # putting them in a df
